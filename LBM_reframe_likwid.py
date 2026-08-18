@@ -11,7 +11,8 @@ from reframe.core.builtins import sanity_function, performance_function
 class lbm_test(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     valid_prog_environs = ['*']
-    executable = 'stream.x'
+    executable = 'likwid-pin -c N:0 /cosma/home/do018/dc-huan3/LBM-Bench/lbmbench-GCC-dp'
+    #Change file path to filepath of benchmark to make it run
     time_limit='1h'
 
     @sanity_function
@@ -23,5 +24,8 @@ class lbm_test(rfm.RunOnlyRegressionTest):
         return sn.extractsingle(r'runtime:\s+(\S+)', self.stdout, 1, float)
 
     @performance_function('MFLUP/s')
+    def performance_bw(self):
+        return sn.extractsingle(r'performance:\s+(\S+)',self.stdout,1,float)
+    @performance_function('GByte/s')
     def bandwidth_bw(self):
         return sn.extractsingle(r'MEM bandwidth:\s+(\S+)', self.stdout, 1, float)
