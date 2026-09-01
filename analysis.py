@@ -1,48 +1,36 @@
 import pandas as pd
 
-
-#This file does some work to format the raw csv file
-#and ensure units are readable
-
-#this should be saved in perflogs/generic/default alongside lbm_test.log
-
-
-
-#with open('lbm_test.log', "r") as f:
-#	reader = csv.reader(f, delimiter = "|")
-#	data = list(reader)
-#	row_count = len(data)
-
-
 df = pd.read_csv('perflogs/generic/default/lbm_test.log', sep = '|', usecols=["job_completion_time", "runtime_bw_value", "runtime_bw_unit", "performance_bw_value", "performance_bw_unit", "bandwidth_bw_value", "bandwidth_bw_unit", "clockfreq_bw_value", "clockfreq_bw_unit", "accessbandwidth_bw_value", "accessbandwidth_bw_unit", "accessdatavolume_bw_value", "accessdatavolume_bw_unit", "accessrate_bw_value", "accessrate_bw_unit", "missrate_bw_value", "missrate_bw_unit", "missratio_bw_value", "missratio_bw_unit"])
-#reading default csv
+#df = pd.read_csv('lbm_test.log', sep = '|', usecols=["job_completion_time", "runtime_bw_value", "runtime_bw_unit", "performance_bw_value", "performance_bw_unit", "bandwidth_bw_value", "bandwidth_bw_unit", "clockfreq_bw_value", "clockfreq_bw_unit", "accessbandwidth_bw_value", "accessbandwidth_bw_unit", "accessdatavolume_bw_value", "accessdatavolume_bw_unit", "accessrate_bw_value", "accessrate_bw_unit", "missrate_bw_value", "missrate_bw_unit", "missratio_bw_value", "missratio_bw_unit"])
+#only difference between these lines are the filepath of the log
+
+cols = ["job_completion_time", "runtime_bw_value", "runtime_bw_unit", "performance_bw_value", "performance_bw_unit", "bandwidth_bw_value", "bandwidth_bw_unit", "clockfreq_bw_value", "clockfreq_bw_unit", "accessbandwidth_bw_value", "accessbandwidth_bw_unit", "accessdatavolume_bw_value", "accessdatavolume_bw_unit", "accessrate_bw_value", "accessrate_bw_unit", "missrate_bw_value", "missrate_bw_unit", "missratio_bw_value", "missratio_bw_unit"]
+#these are the columns that we are reading from the performance log csv file
 
 
-df2 = pd.DataFrame()
-#empty dataframe to store the concatenated columns
 
-df1 = df.fillna("x").astype(str)
-#edited default dataframe so .astype(str) doesn't throw error with NaN
+d = {'Measurement': ['runtime[s]', 'performance [MFLUP/s]', 'bandwidth [GByte/s]', 'clockfreq [MHz]', 'accessbandwidth [MByte/s]', 'accessdatavolume [GBytes]', 'accessrate [%]', 'missrate [%]', 'missratio [%]'], "Mean": [df['runtime_bw_value'].mean(), df['performance_bw_value'].mean(), df['bandwidth_bw_value'].mean(), df['clockfreq_bw_value'].mean(), df['accessbandwidth_bw_value'].mean(), df['accessdatavolume_bw_value'].mean(), df['accessrate_bw_value'].mean(), df['missrate_bw_value'].mean(), df['missratio_bw_value'].mean()], 'SD:': [df['runtime_bw_value'].std(), df['performance_bw_value'].std(), df['bandwidth_bw_value'].std(), df['clockfreq_bw_value'].std(), df['accessbandwidth_bw_value'].std(), df['accessdatavolume_bw_value'].std(), df['accessrate_bw_value'].std(), df['missrate_bw_value'].std(), df['missratio_bw_value'].std()]}
+#this above line could probably be automated with a loop
 
-df2["runtime"] = df1["runtime_bw_value"].astype(str) + df1["runtime_bw_unit"]
+sum= pd.DataFrame(data=d)
+sum = sum.round(4)
+print("\n Summary Table:")
+print(sum)
 
-df2["performance"] = df1["performance_bw_value"].astype(str) + df1["performance_bw_unit"]
 
-df2["bandwidth"] = df1["bandwidth_bw_value"].astype(str) + df1["bandwidth_bw_unit"]
+#data cleaning, taking unit, adding to column heading and deleting unit column
 
-df2["clock_freq"] = df1["clockfreq_bw_value"].astype(str) + df1["clockfreq_bw_unit"]
+for i in range(1, len(cols), 2):
+	df.rename(columns={f"{cols[i]}": f"{cols[i]} [{df.iloc[3, i+1]}]"}, inplace=True)
 
-df2["access_data_volume"] = df1["accessdatavolume_bw_value"].astype(str) + df1["accessdatavolume_bw_unit"]
+for i in range(len(cols), 1, -2):
+	df.drop(f"{cols[i-1]}", axis=1, inplace=True)
 
-df2["access_rate"] = df1["accessrate_bw_value"].astype(str) + df1["accessrate_bw_unit"]
 
-df2["miss_rate"] = df1["missrate_bw_value"].astype(str) + df1["missrate_bw_unit"]
-
-df2["miss_ratio"] = df1["missratio_bw_value"].astype(str) + df1["missratio_bw_unit"]
 
 pd.set_option('display.max_columns', None)
-#so all columns are shown instead of first last and ...
-print(df2)
+print("\n \n Individual Readings:")
+print(df)
 
-#^above is for single thread likwid-perfctr only
-#format for output from multiple threads still needs work
+#^above is for single thread likwid-perfctr only, extra work required to scrape multiple outputs
+#from multiple thread measurements
