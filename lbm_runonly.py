@@ -11,7 +11,9 @@ from reframe.core.builtins import sanity_function, performance_function
 class lbm_test(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     valid_prog_environs = ['*']
-    executable = '/cosma/home/do018/dc-huan3/LBM-Bench/lbmbench-GCC-dp'
+    #executable = '/cosma/home/do018/dc-huan3/LBM-Bench/lbmbench-GCC-dp'
+    executable = 'likwid-perfctr -C 0,1 -g L3 /cosma/home/do018/dc-huan3/LBM-Bench/lbmbench-GCC-dp'
+    #-C is no. threads, -g is performance group
     #change the executable file path, other executable options are eg. lbmbench-CLANG-dp etc.
     time_limit = '1h'
 
@@ -30,3 +32,31 @@ class lbm_test(rfm.RunOnlyRegressionTest):
     @performance_function('GByte/s')
     def bandwidth_bw(self):
         return sn.extractsingle(r'MEM bandwidth:\s+(\S+)', self.stdout, 1, float)
+
+    @performance_function('MHz')
+    def clockfreq_bw(self):
+        return sn.extractsingle(r'Clock \[MHz\]\s+\|\s+(\S+)', self.stdout, 1, float)
+        
+    @performance_function('MBytes/s')
+    def accessbandwidth_bw(self):
+        return sn.extractsingle(r'L3 access bandwidth \[MBytes/s\]\s+\|\s+(\S+)', self.stdout, 1, float)
+
+    @performance_function('GBytes')
+    def accessdatavolume_bw(self):
+        return sn.extractsingle(r'L3 access data volume \[GBytes\]\s+\|\s+(\S+)', self.stdout, 1, float)
+
+    @performance_function('%')
+    def accessrate_bw(self):
+        return sn.extractsingle(r'L3 access rate \[%\]\s+\|\s+(\S+)', self.stdout, 1, float)
+
+    @performance_function('%')
+    def missrate_bw(self):
+        return sn.extractsingle(r'L3 miss rate \[%\]\s+\|\s+(\S+)', self.stdout, 1, float)
+
+    @performance_function('%')
+    def missratio_bw(self):
+        return sn.extractsingle(r'L3 miss ratio \[%\]\s+\|\s+(\S+)', self.stdout, 1, float)
+
+
+
+
